@@ -156,7 +156,42 @@ export function Toolbar({ onExport, onSave, onLoad }: { onExport: (fileName?: st
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Configure Output Requests</DialogTitle>
+                <div className="flex items-center justify-between">
+                  <DialogTitle>Configure Output Requests</DialogTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const types: ("HISTORY" | "PLOT" | "SPREADSHEET")[] = ["HISTORY", "PLOT", "SPREADSHEET"];
+                      const variables = ["Q", "HEAD", "ELEV", "VEL", "PRESS", "PIEZHEAD"];
+                      
+                      nodes.forEach(node => {
+                        types.forEach(type => {
+                          addOutputRequest({
+                            elementId: node.id,
+                            elementType: "node",
+                            requestType: type,
+                            variables: [...variables]
+                          });
+                        });
+                      });
+                      
+                      edges.forEach(edge => {
+                        types.forEach(type => {
+                          addOutputRequest({
+                            elementId: edge.id,
+                            elementType: "edge",
+                            requestType: type,
+                            variables: [...variables]
+                          });
+                        });
+                      });
+                    }}
+                    data-testid="button-select-all-requests-toolbar"
+                  >
+                    Select All
+                  </Button>
+                </div>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">

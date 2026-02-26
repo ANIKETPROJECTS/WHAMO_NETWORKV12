@@ -569,7 +569,52 @@ export function Header({
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Configure Output Requests</DialogTitle>
+                      <div className="flex items-center justify-between">
+                        <DialogTitle>Configure Output Requests</DialogTitle>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Elements to select: nodes (excluding special types if any) and edges
+                            // Types mentioned: node, conduit (edge), dummypipe (edge), other (edge)
+                            // The user wants All History, Plot and Spreadsheet
+                            const types: ("HISTORY" | "PLOT" | "SPREADSHEET")[] = ["HISTORY", "PLOT", "SPREADSHEET"];
+                            const variables = ["Q", "HEAD", "ELEV", "VEL", "PRESS", "PIEZHEAD"];
+                            
+                            // Add requests for all nodes
+                            nodes.forEach(node => {
+                              types.forEach(type => {
+                                addOutputRequest({
+                                  elementId: node.id,
+                                  elementType: "node",
+                                  requestType: type,
+                                  variables: [...variables]
+                                });
+                              });
+                            });
+                            
+                            // Add requests for all edges
+                            edges.forEach(edge => {
+                              types.forEach(type => {
+                                addOutputRequest({
+                                  elementId: edge.id,
+                                  elementType: "edge",
+                                  requestType: type,
+                                  variables: [...variables]
+                                });
+                              });
+                            });
+                            
+                            toast({
+                              title: "Selected All",
+                              description: "All elements and variables added for History, Plot, and Spreadsheet.",
+                            });
+                          }}
+                          data-testid="button-select-all-requests"
+                        >
+                          Select All
+                        </Button>
+                      </div>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid gap-2">
