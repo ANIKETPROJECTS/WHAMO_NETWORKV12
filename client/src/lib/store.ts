@@ -510,7 +510,7 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
 
   addOutputRequest: (request) => {
     get().saveToHistory();
-    const id = `req-${Date.now()}`;
+    const id = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     set({ outputRequests: [...get().outputRequests, { ...request, id }] });
   },
 

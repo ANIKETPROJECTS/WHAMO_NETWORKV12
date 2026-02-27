@@ -235,7 +235,10 @@ export function Toolbar({ onExport, onSave, onLoad }: { onExport: (fileName?: st
                 </div>
                 <div className="grid gap-2">
                   <Label>Request Type</Label>
-                  <Select value={requestType} onValueChange={(v: any) => setRequestType(v)}>
+                  <Select value={requestType} onValueChange={(v: any) => {
+                    setRequestType(v);
+                    setSelectedElementId("");
+                  }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select type..." />
                     </SelectTrigger>
