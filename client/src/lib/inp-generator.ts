@@ -345,28 +345,32 @@ export function generateInpFile(nodes: WhamoNode[], edges: WhamoEdge[], autoDown
     if (!sched || sched.points.length === 0) {
       throw new Error(`HSCHEDULE ${num} requires at least one T/H pair`);
     }
+    addL('SCHEDULE');
     addL(`  HSCHEDULE ${num}`);
     sched.points.forEach(p => {
-      addL(`   T ${p.time} H ${toFPS(Number(p.head), globalUnit, 'elevation')}`);
+      addL(`   T ${p.time.toFixed(1)}  H   ${toFPS(Number(p.head), globalUnit, 'elevation')}`);
     });
+    addL('FINISH');
+    addL('');
   });
 
   const flowBoundaries = nodes.filter(n => n.type === 'flowBoundary');
-  flowBoundaries.forEach(n => {
-    const d = n.data;
-    const unit = d.unit || globalUnit;
-    let schedule = '';
-    if (d.schedulePoints && Array.isArray(d.schedulePoints) && d.schedulePoints.length > 0) {
-      schedule = d.schedulePoints.map((p: any) => `T ${p.time} Q ${toFPS(Number(p.flow), unit, 'flow')}`).join(' ');
-    } else {
-      schedule = 'T 0 Q 3000 T 20 Q 0 T 3000 Q 0';
-    }
-    addL(` QSCHEDULE ${d.scheduleNumber} ${schedule}`);
-  });
-  
-  addL('');
-  addL('FINISH');
-  addL('');
+  if (flowBoundaries.length > 0) {
+    addL('SCHEDULE');
+    flowBoundaries.forEach(n => {
+      const d = n.data;
+      const unit = d.unit || globalUnit;
+      let schedule = '';
+      if (d.schedulePoints && Array.isArray(d.schedulePoints) && d.schedulePoints.length > 0) {
+        schedule = d.schedulePoints.map((p: any) => `T ${p.time} Q ${toFPS(Number(p.flow), unit, 'flow')}`).join(' ');
+      } else {
+        schedule = 'T 0 Q 3000 T 20 Q 0 T 3000 Q 0';
+      }
+      addL(` QSCHEDULE ${d.scheduleNumber} ${schedule}`);
+    });
+    addL('FINISH');
+    addL('');
+  }
   addL('');
   addL('C OUTPUT REQUEST');
   addL('');

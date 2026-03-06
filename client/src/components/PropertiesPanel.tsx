@@ -337,7 +337,7 @@ export function PropertiesPanel() {
                                 const currentSched = hSchedules.find(s => s.number === schedNum);
                                 if (currentSched) {
                                   const newPoints = [...currentSched.points];
-                                  newPoints[index] = { ...newPoints[index], time: parseFloat(e.target.value) || 0 };
+                                  newPoints[index] = { ...newPoints[index], time: parseFloat(e.target.value) };
                                   updateHSchedule(schedNum, newPoints);
                                 }
                               }}
@@ -354,7 +354,7 @@ export function PropertiesPanel() {
                                 const currentSched = hSchedules.find(s => s.number === schedNum);
                                 if (currentSched) {
                                   const newPoints = [...currentSched.points];
-                                  newPoints[index] = { ...newPoints[index], head: parseFloat(e.target.value) || 0 };
+                                  newPoints[index] = { ...newPoints[index], head: parseFloat(e.target.value) };
                                   updateHSchedule(schedNum, newPoints);
                                 }
                               }}
