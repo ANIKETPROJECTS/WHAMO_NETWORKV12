@@ -144,19 +144,39 @@ export function validateNetwork(nodes: WhamoNode[], edges: WhamoEdge[]): { error
     if (n.type === 'node' || n.type === 'junction') {
       const isBoundary = nodes.some(other => 
         (other.type === 'reservoir' || other.type === 'flowBoundary') && 
-        adjacency.get(other.id)?.includes(n.id)
+        (adjacency.get(other.id)?.includes(n.id) || false)
       );
+
+      // A node/junction is a boundary if it's connected to a Reservoir or Flow Boundary
+      // But we must check the direction.
+      // 1. If connected to a Reservoir: Reservoir (source) -> Pipe -> Node. Node is target.
+      // 2. If connected to a Flow Boundary: Flow Boundary (source) -> Pipe -> Node. Node is target.
+      
+      const isTargetOfBoundary = edges.some(e => {
+        const sourceNode = nodes.find(node => node.id === e.source);
+        return e.target === n.id && (sourceNode?.type === 'reservoir' || sourceNode?.type === 'flowBoundary');
+      });
+
+      const isSourceOfBoundary = edges.some(e => {
+        const targetNode = nodes.find(node => node.id === e.target);
+        return e.source === n.id && (targetNode?.type === 'reservoir' || targetNode?.type === 'flowBoundary');
+      });
 
       // Direction-aware dead end detection:
       // A node is a dead end if it has NO outgoing connections (it's a sink)
-      // AND it's not a valid boundary condition (Reservoir or Flow Boundary).
+      // AND it's not connected to a boundary condition that acts as a sink.
       const outgoing = outAdjacency.get(n.id) || [];
-      const incoming = inAdjacency.get(n.id) || [];
-
-      if (outgoing.length === 0 && !isBoundary) {
-        addError(n.id, `Dead end detected: ${n.type} ${d.label} has no outgoing continuation or boundary condition.`, d.label, n.type);
-      } else if (connections.length < 2 && !isBoundary) {
-        addWarning(n.id, `Node ${d.label} has fewer than 2 connections and is not a boundary.`, d.label, n.type);
+      
+      // Valid termination:
+      // - Has outgoing pipes to other nodes
+      // - Is the source of a pipe leading to a Reservoir or Flow Boundary (rare but possible in some models)
+      // - Is a "sink" node but is connected to a boundary condition that acts as a source for it? 
+      // Actually, WHAMO usually requires branches to end at a Reservoir or Flow Boundary.
+      
+      if (outgoing.length === 0 && !isSourceOfBoundary) {
+        addError(n.id, `Dead end detected: ${n.type} ${d.label} must eventually lead to a Reservoir or Flow Boundary.`, d.label, n.type);
+      } else if (connections.length < 2 && !isTargetOfBoundary && !isSourceOfBoundary) {
+        addWarning(n.id, `Node ${d.label} has fewer than 2 connections and is not connected to a boundary.`, d.label, n.type);
       }
     }
   });
