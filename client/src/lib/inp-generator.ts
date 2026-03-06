@@ -335,8 +335,6 @@ export function generateInpFile(nodes: WhamoNode[], edges: WhamoEdge[], autoDown
 
   addL('');
   addL('');
-  addL('SCHEDULE');
-  
   const hSchedules = state.hSchedules || [];
   const usedHScheduleNumbers = new Set(nodes.filter(n => n.type === 'reservoir' && n.data.mode === 'schedule').map(n => n.data.hScheduleNumber || 1));
   

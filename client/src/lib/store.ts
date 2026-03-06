@@ -482,7 +482,7 @@ export const useNetworkStore = create<NetworkState>((set, get) => ({
     set({ 
       nodes, 
       edges: processedEdges, 
-      hSchedules: (params as any)?.hSchedules || (params as any)?.content?.hSchedules || [],
+      hSchedules: (params as any)?.hSchedules || (params as any)?.content?.hSchedules || (params as any)?.content?.params?.hSchedules || [],
       computationalParams: params || get().computationalParams,
       outputRequests: requests || [],
       projectName: projectName || get().projectName,
