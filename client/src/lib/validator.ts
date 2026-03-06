@@ -39,10 +39,20 @@ export function validateNetwork(nodes: WhamoNode[], edges: WhamoEdge[]): { error
 
   // 2. Connectivity & Topology
   const adjacency = new Map<string, string[]>();
-  nodes.forEach(n => adjacency.set(n.id, []));
+  const outAdjacency = new Map<string, string[]>();
+  const inAdjacency = new Map<string, string[]>();
+
+  nodes.forEach(n => {
+    adjacency.set(n.id, []);
+    outAdjacency.set(n.id, []);
+    inAdjacency.set(n.id, []);
+  });
+
   edges.forEach(e => {
     adjacency.get(e.source)?.push(e.target);
     adjacency.get(e.target)?.push(e.source);
+    outAdjacency.get(e.source)?.push(e.target);
+    inAdjacency.get(e.target)?.push(e.source);
   });
 
   // Check for floating elements
@@ -137,11 +147,14 @@ export function validateNetwork(nodes: WhamoNode[], edges: WhamoEdge[]): { error
         adjacency.get(other.id)?.includes(n.id)
       );
 
-      // Dead end detection: 
-      // A node/junction is a dead end if it has only 1 connection and it's not connected to a boundary.
-      // Boundaries (Reservoir, Flow Boundary) are allowed to have 1 connection.
-      if (connections.length === 1 && !isBoundary) {
-        addError(n.id, `Dead end detected: ${n.type} ${d.label} has no continuation or boundary condition.`, d.label, n.type);
+      // Direction-aware dead end detection:
+      // A node is a dead end if it has NO outgoing connections (it's a sink)
+      // AND it's not a valid boundary condition (Reservoir or Flow Boundary).
+      const outgoing = outAdjacency.get(n.id) || [];
+      const incoming = inAdjacency.get(n.id) || [];
+
+      if (outgoing.length === 0 && !isBoundary) {
+        addError(n.id, `Dead end detected: ${n.type} ${d.label} has no outgoing continuation or boundary condition.`, d.label, n.type);
       } else if (connections.length < 2 && !isBoundary) {
         addWarning(n.id, `Node ${d.label} has fewer than 2 connections and is not a boundary.`, d.label, n.type);
       }
